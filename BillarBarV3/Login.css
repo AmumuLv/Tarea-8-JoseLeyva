@@ -1,0 +1,559 @@
+/* ============================================================
+   BILLARBAR — login.css
+   Módulo de autenticación: Login · Registro · Cambiar contraseña
+   Tokens visuales idénticos al dashboard principal
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@600;700&display=swap');
+
+/* ── 1. Variables (mismas que style.css del dashboard) ─────── */
+:root {
+    --bg-fondo:         #0f172a;
+    --bg-panel:         #1e293b;
+    --bg-input:         #0b1120;
+    --texto-claro:      #f8fafc;
+    --texto-muted:      #94a3b8;
+    --borde:            #334155;
+    --color-dorado:     #d4af37;
+    --color-principal:  #38bdf8;
+    --color-libre:      #10b981;
+    --color-ocupada:    #ef4444;
+    --btn-verde:        #059669;
+    --btn-rojo:         #dc2626;
+
+    /* Auth-specific */
+    --card-bg:          #16213e;
+    --card-border:      rgba(212, 175, 55, 0.18);
+    --input-focus-glow: rgba(56, 189, 248, 0.22);
+    --glow-gold:        rgba(212, 175, 55, 0.12);
+    --transition:       0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── 2. Reset ───────────────────────────────────────────────── */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 15px;
+    background-color: var(--bg-fondo);
+    color: var(--texto-claro);
+    overflow: hidden;
+}
+
+/* ── 3. Fondo decorativo ────────────────────────────────────── */
+.bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.bg-glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+}
+.bg-glow--1 {
+    width: 500px;
+    height: 500px;
+    top: -120px;
+    left: -80px;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+}
+.bg-glow--2 {
+    width: 400px;
+    height: 400px;
+    bottom: -100px;
+    right: -60px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, transparent 70%);
+}
+
+/* ── 4. Wrapper centrado ────────────────────────────────────── */
+.auth-wrapper {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+/* ── 5. Marca / Logo ────────────────────────────────────────── */
+.auth-brand {
+    text-align: center;
+    user-select: none;
+}
+
+/* --- Logo --- */
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--texto-claro);
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.logo-img {
+    height: 25px;
+    width: auto;
+}
+
+.brand-icon {
+    font-size: 2rem;
+    color: var(--color-dorado);
+    filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.5));
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.brand-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--texto-claro);
+    text-shadow: 0 0 24px rgba(212, 175, 55, 0.2);
+}
+
+.brand-tagline {
+    font-size: 0.82rem;
+    color: var(--texto-muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+/* ── 6. Card de autenticación ───────────────────────────────── */
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.03),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Línea dorada superior */
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-dorado), transparent);
+}
+
+/* ── 7. Vistas (login / registro / cambiar) ─────────────────── */
+.auth-view {
+    display: none;
+    padding: 32px 36px;
+    animation: slideIn 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-view.active {
+    display: block;
+}
+
+/* ── 8. Cabecera de vista ───────────────────────────────────── */
+.auth-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.auth-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--texto-claro);
+    line-height: 1.2;
+}
+
+.auth-subtitle {
+    font-size: 0.85rem;
+    color: var(--texto-muted);
+    margin-top: 3px;
+}
+
+/* ── 9. Formulario ──────────────────────────────────────────── */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Fila de dos columnas (nombres / apellidos, teléfono / DNI) */
+.field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.field-group label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--texto-muted);
+    letter-spacing: 0.3px;
+}
+
+/* ── 10. Inputs ─────────────────────────────────────────────── */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 13px;
+    color: var(--texto-muted);
+    font-size: 0.88rem;
+    pointer-events: none;
+    transition: color var(--transition);
+    z-index: 1;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 10px 42px 10px 38px;
+    background: var(--bg-input);
+    border: 1px solid var(--borde);
+    border-radius: 9px;
+    color: var(--texto-claro);
+    font-size: 0.92rem;
+    font-family: inherit;
+    outline: none;
+    transition:
+        border-color var(--transition),
+        box-shadow var(--transition),
+        background var(--transition);
+}
+
+.auth-input::placeholder {
+    color: #3d5170;
+}
+
+.auth-input:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 3px var(--input-focus-glow);
+    background: #0d1527;
+}
+
+.auth-input:focus + .input-icon,
+.input-wrapper:focus-within .input-icon {
+    color: var(--color-principal);
+}
+
+/* Input válido */
+.auth-input.valid {
+    border-color: var(--color-libre);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+}
+
+/* Input inválido */
+.auth-input.invalid {
+    border-color: var(--color-ocupada);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+    animation: shake 0.35s ease;
+}
+
+/* ── 11. Toggle mostrar/ocultar contraseña ──────────────────── */
+.toggle-pass {
+    position: absolute;
+    right: 11px;
+    background: none;
+    border: none;
+    color: var(--texto-muted);
+    cursor: pointer;
+    font-size: 0.88rem;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color var(--transition), transform var(--transition);
+    z-index: 2;
+    line-height: 1;
+}
+
+.toggle-pass:hover {
+    color: var(--color-principal);
+    transform: scale(1.1);
+}
+
+/* ── 12. Indicador de fortaleza de contraseña ───────────────── */
+.password-strength {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 3px;
+}
+
+.strength-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--borde);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 2px;
+    transition: width 0.4s ease, background-color 0.3s ease;
+}
+
+.strength-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: right;
+    color: var(--texto-muted);
+    transition: color 0.3s;
+}
+
+/* ── 13. Errores de campo ───────────────────────────────────── */
+.field-error {
+    font-size: 0.78rem;
+    color: var(--color-ocupada);
+    min-height: 16px;
+    display: block;
+    padding-left: 2px;
+    transition: opacity 0.2s;
+}
+
+/* ── 14. Botones ────────────────────────────────────────────── */
+.form-actions {
+    margin-top: 4px;
+}
+
+.btn-full {
+    width: 100%;
+    padding: 11px 20px;
+    border-radius: 9px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    transition:
+        background var(--transition),
+        box-shadow var(--transition),
+        transform 0.12s ease,
+        opacity var(--transition);
+}
+
+.btn-full:active {
+    transform: scale(0.98);
+}
+
+/* Primario — azul */
+.btn-primary {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(56, 189, 248, 0.28);
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    box-shadow: 0 6px 24px rgba(56, 189, 248, 0.4);
+}
+
+/* Secundario — outline dorado */
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--color-dorado);
+    color: var(--color-dorado);
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+}
+.btn-secondary:hover {
+    background: rgba(212, 175, 55, 0.08);
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.15);
+}
+
+/* Ghost — solo texto */
+.btn-ghost {
+    background: transparent;
+    border: 1px solid var(--borde);
+    color: var(--texto-muted);
+}
+.btn-ghost:hover {
+    background: rgba(255,255,255,0.04);
+    color: var(--texto-claro);
+}
+
+/* Botón volver (flecha) */
+.btn-back {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--borde);
+    color: var(--texto-muted);
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.btn-back:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: var(--color-principal);
+    color: var(--color-principal);
+}
+
+/* ── 15. Divisor "¿No tienes cuenta?" ──────────────────────── */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--texto-muted);
+    font-size: 0.82rem;
+}
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--borde);
+}
+
+/* ── 16. Enlace de pie ──────────────────────────────────────── */
+.auth-footer {
+    text-align: center;
+}
+.link-btn {
+    background: none;
+    border: none;
+    color: var(--texto-muted);
+    font-size: 0.8rem;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color var(--transition);
+    padding: 4px;
+    border-radius: 4px;
+}
+.link-btn:hover {
+    color: var(--color-principal);
+}
+
+/* ── 17. Toast de notificación ──────────────────────────────── */
+.auth-toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-panel);
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.auth-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.auth-toast.success .toast-icon { color: var(--color-libre); }
+.auth-toast.error   .toast-icon { color: var(--color-ocupada); }
+.auth-toast.info    .toast-icon { color: var(--color-principal); }
+
+/* ── 18. Loading state en botón ─────────────────────────────── */
+.btn-loading {
+    pointer-events: none;
+    opacity: 0.75;
+}
+.btn-loading::after {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-left: 8px;
+}
+
+/* ── 19. Animaciones ────────────────────────────────────────── */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-5px); }
+    40%       { transform: translateX(5px); }
+    60%       { transform: translateX(-3px); }
+    80%       { transform: translateX(3px); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4)); }
+    50%      { filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.75)); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── 20. Responsive ─────────────────────────────────────────── */
+@media (max-width: 500px) {
+    .auth-view {
+        padding: 24px 22px;
+    }
+    .field-row {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    .brand-name {
+        font-size: 1.7rem;
+    }
+}

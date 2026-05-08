@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BILLARBAR — Acceso</title>
+    <link rel="stylesheet" href="Login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Fondo decorativo -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow--1"></div>
+    <div class="bg-glow bg-glow--2"></div>
+
+    <main class="auth-wrapper">
+
+        <!-- LOGO / MARCA -->
+        <header class="auth-brand">
+            <div class="brand-logo">
+                <img src="assets/imagen/bola-ocho.png" alt="Logo BILLARBAR" class="logo-img">
+                <span class="brand-name">BILLAR EL BARCHELONA</span>
+            </div>
+            <p class="brand-tagline">Sistema de gestión de mesas</p>
+        </header>
+
+        <!-- CONTENEDOR DE VISTAS (login / registro / cambiar contraseña) -->
+        <div class="auth-card" id="auth-card">
+
+            <!-- ══════════════════════════════
+                 VISTA: LOGIN
+                 ══════════════════════════════ -->
+            <div class="auth-view active" id="view-login">
+                <div class="auth-header">
+                    <h2 class="auth-title">Bienvenido</h2>
+                    <p class="auth-subtitle">Ingresa tus credenciales para continuar</p>
+                </div>
+
+                <form class="auth-form" id="form-login" novalidate>
+
+                    <div class="field-group">
+                        <label for="login-usuario">Usuario o correo</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <input
+                                type="text"
+                                id="login-usuario"
+                                class="auth-input"
+                                placeholder="tu@correo.com"
+                                autocomplete="username"
+                            >
+                        </div>
+                        <span class="field-error" id="err-login-usuario"></span>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="login-password">Contraseña</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input
+                                type="password"
+                                id="login-password"
+                                class="auth-input"
+                                placeholder="••••••••"
+                                autocomplete="current-password"
+                            >
+                            <button type="button" class="toggle-pass" data-target="login-password" tabindex="-1">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <span class="field-error" id="err-login-password"></span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary btn-full">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            Iniciar sesión
+                        </button>
+                    </div>
+
+                    <div class="auth-divider">
+                        <span>¿No tienes cuenta?</span>
+                    </div>
+
+                    <button type="button" class="btn-secondary btn-full" id="ir-registro">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Crear cuenta
+                    </button>
+
+                </form>
+            </div>
+
+            <!-- ══════════════════════════════
+                 VISTA: REGISTRO
+                 ══════════════════════════════ -->
+            <div class="auth-view" id="view-registro">
+                <div class="auth-header">
+                    <button type="button" class="btn-back" id="volver-login">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <h2 class="auth-title">Crear cuenta</h2>
+                        <p class="auth-subtitle">Completa los datos para registrarte</p>
+                    </div>
+                </div>
+
+                <form class="auth-form" id="form-registro" novalidate>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="reg-nombres">Nombres</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-id-card input-icon"></i>
+                                <input type="text" id="reg-nombres" class="auth-input" placeholder="Juan">
+                            </div>
+                            <span class="field-error" id="err-reg-nombres"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="reg-apellidos">Apellidos</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-id-card input-icon"></i>
+                                <input type="text" id="reg-apellidos" class="auth-input" placeholder="Pérez">
+                            </div>
+                            <span class="field-error" id="err-reg-apellidos"></span>
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="reg-telefono">Teléfono</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-phone input-icon"></i>
+                                <input type="tel" id="reg-telefono" class="auth-input" placeholder="987654321">
+                            </div>
+                            <span class="field-error" id="err-reg-telefono"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="reg-dni">DNI</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-fingerprint input-icon"></i>
+                                <input type="text" id="reg-dni" class="auth-input" placeholder="12345678" maxlength="8">
+                            </div>
+                            <span class="field-error" id="err-reg-dni"></span>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="reg-correo">Correo electrónico</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="email" id="reg-correo" class="auth-input" placeholder="tu@correo.com" autocomplete="email">
+                        </div>
+                        <span class="field-error" id="err-reg-correo"></span>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="reg-password">Contraseña</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="reg-password" class="auth-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                            <button type="button" class="toggle-pass" data-target="reg-password" tabindex="-1">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength" id="pass-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strength-fill"></div>
+                            </div>
+                            <span class="strength-label" id="strength-label"></span>
+                        </div>
+                        <span class="field-error" id="err-reg-password"></span>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="reg-confirm">Confirmar contraseña</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="reg-confirm" class="auth-input" placeholder="Repite tu contraseña" autocomplete="new-password">
+                            <button type="button" class="toggle-pass" data-target="reg-confirm" tabindex="-1">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <span class="field-error" id="err-reg-confirm"></span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary btn-full">
+                            <i class="fa-solid fa-user-check"></i>
+                            Crear cuenta
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- ══════════════════════════════
+                 VISTA: CAMBIAR CONTRASEÑA
+                 ══════════════════════════════ -->
+            <div class="auth-view" id="view-cambiar">
+                <div class="auth-header">
+                    <button type="button" class="btn-back" id="volver-login-2">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <h2 class="auth-title">Nueva contraseña</h2>
+                        <p class="auth-subtitle">Actualiza tus credenciales de acceso</p>
+                    </div>
+                </div>
+
+                <form class="auth-form" id="form-cambiar" novalidate>
+
+                    <div class="field-group">
+                        <label for="cambiar-actual">Contraseña actual</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-key input-icon"></i>
+                            <input type="password" id="cambiar-actual" class="auth-input" placeholder="Tu contraseña actual">
+                            <button type="button" class="toggle-pass" data-target="cambiar-actual" tabindex="-1">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <span class="field-error" id="err-cambiar-actual"></span>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="cambiar-nueva">Nueva contraseña</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="cambiar-nueva" class="auth-input" placeholder="Mínimo 6 caracteres">
+                            <button type="button" class="toggle-pass" data-target="cambiar-nueva" tabindex="-1">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <span class="field-error" id="err-cambiar-nueva"></span>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="cambiar-confirm">Confirmar nueva contraseña</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="cambiar-confirm" class="auth-input" placeholder="Repite la nueva contraseña">
+                            <button type="button" class="toggle-pass" data-target="cambiar-confirm" tabindex="-1">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <span class="field-error" id="err-cambiar-confirm"></span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary btn-full">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            Actualizar contraseña
+                        </button>
+                    </div>
+
+                    <div class="auth-divider"><span>o</span></div>
+
+                    <button type="button" class="btn-ghost btn-full" id="ir-cambiar-login">
+                        Volver al inicio de sesión
+                    </button>
+
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Toast de notificación -->
+        <div class="auth-toast" id="auth-toast">
+            <i class="toast-icon fa-solid fa-circle-check"></i>
+            <span class="toast-msg" id="toast-msg">Operación exitosa</span>
+        </div>
+
+        <!-- Enlace cambiar contraseña (fuera de card, discreto) -->
+        <div class="auth-footer">
+            <button type="button" class="link-btn" id="ir-cambiar">
+                <i class="fa-solid fa-rotate"></i> Cambiar contraseña
+            </button>
+        </div>
+
+    </main>
+
+    <script src="login.js"></script>
+</body>
+</html>

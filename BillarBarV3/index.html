@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BILLARBAR — Panel Administrativo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- =============================================
+         NAVBAR SUPERIOR
+         ============================================= -->
+    <nav class="topbar">
+        <div class="logo">
+            <img src="assets/imagen/bola-ocho.png" alt="Logo BILLARBAR" class="logo-img">
+            BARCHELONA
+        </div>
+
+        <div class="usuario-menu">
+            <button class="btn-outline"><i class="fa-solid fa-clipboard-list"></i> Listas</button>
+            <button class="btn-outline"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+            <button class="btn-outline"><i class="fa-solid fa-tags"></i> Administracion</button>
+
+            <div class="dropdown-perfil" id="dropdown-perfil">
+                <button class="btn-perfil" id="btn-perfil">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <span id="nombre-usuario">Admin</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-contenido" id="dropdown-contenido">
+                    <!-- Info del usuario -->
+                    <div class="dropdown-info">
+                        <div class="dropdown-avatar"><i class="fa-solid fa-user-tie"></i></div>
+                        <div>
+                            <div class="dropdown-nombre" id="dd-nombre-completo">Admin</div>
+                            <div class="dropdown-correo" id="dd-correo">—</div>
+                        </div>
+                    </div>
+                    <hr class="separador-menu">
+                    <a href="#" id="btn-ver-perfil">
+                        <i class="fa-solid fa-id-card"></i> Ver perfil
+                    </a>
+                    <a href="#" id="btn-cambiar-cuenta">
+                        <i class="fa-solid fa-right-left"></i> Cambiar cuenta
+                    </a>
+                    <hr class="separador-menu">
+                    <a href="#" id="btn-cerrar-sesion" class="texto-rojo">
+                        <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- =============================================
+         LAYOUT PRINCIPAL (Panel Lateral + Contenido)
+         ============================================= -->
+    <div class="app-contenedor">
+
+        <!-- PANEL LATERAL: Control de mesa seleccionada -->
+        <aside class="panel-lateral borde-tematico">
+
+            <h2 class="titulo-seccion">
+                <i class="fa-solid fa-sliders"></i> Control Central
+            </h2>
+
+            <!-- Selector de mesa -->
+            <div class="grupo-control">
+                <label for="select-mesa">Seleccionar mesa</label>
+                <select class="input-dark" id="select-mesa"></select>
+            </div>
+
+
+<!-- Información de la mesa seleccionada -->
+            <div class="info-mesa">
+                <p>
+                    <i class="fa-solid fa-table"></i> <strong>Mesa:</strong> <span id="lbl-nombre">--</span>
+                    <button id="btn-editar-nombre" class="btn-editar-nombre" title="Cambiar nombre">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </p>
+                <p><i class="fa-solid fa-gamepad"></i>      <strong>Modalidad:</strong> <span id="lbl-modalidad">--</span></p>
+                <p><i class="fa-solid fa-circle-info"></i>  <strong>Estado:</strong>    <span id="lbl-estado">--</span></p>
+                <p><i class="fa-solid fa-hourglass-start"></i> <strong>Inicio:</strong>    <span id="lbl-inicio">--:--</span></p>
+                <p><i class="fa-regular fa-clock"></i>      <strong>Tiempo:</strong>    <span id="lbl-tiempo" class="tiempo-destacado">00:00:00</span></p>
+                <p><i class="fa-solid fa-sack-dollar"></i>  <strong>Acumulado:</strong> S/ <span id="lbl-precio">0.00</span></p>
+                <p id="row-precio-hora" style="display:none;"><i class="fa-solid fa-tag"></i> <strong>Precio/Hora:</strong> <span id="lbl-precio-hora">--</span></p>
+                
+                <!-- NUEVO: Mostrar el Modo de Cobro -->
+                <p id="row-modo-cobro" style="display:none;"><i class="fa-solid fa-stopwatch"></i> <strong>Cobro:</strong> <span id="lbl-modo-display">--</span></p>
+            </div>
+
+            <!-- ── Controles específicos de BILLAR ── -->
+            <div id="controles-billar" class="config-modalidad">
+                <hr class="separador">
+
+                <div class="grupo-control">
+                    <label for="input-precio">Precio por hora (S/)</label>
+                    <div class="input-con-boton">
+                        <input type="number" class="input-dark" id="input-precio" value="15" min="0" step="0.50" onkeydown="return !['e','E','+','-'].includes(event.key)" oninput="if(this.value<0||this.value==='')this.value=0">
+                        <button class="btn-pequeno" id="btn-guardar-precio" title="Guardar precio">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                        </button>
+                    </div>
+                </div>
+
+<div class="grupo-control">
+    <label for="modo-cobro"><i class="fa-solid fa-stopwatch"></i> Modo de cobro</label>
+    <div class="input-con-boton">
+        <select class="input-dark" id="modo-cobro">
+            <option value="30" selected>Bloques · Media hora</option>
+            <option value="60">Bloques · 1 Hora</option>
+            <option value="corrido">Corrido (libre)</option>
+        </select>
+        <button class="btn-pequeno btn-verde" id="btn-guardar-modo" title="Guardar configuración de tiempo">
+            <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Botones de sumar tiempo (solo visibles en modo bloque) -->
+<div class="grupo-control" id="grupo-sumar-tiempo">
+    <label><i class="fa-solid fa-cubes-stacked"></i> Bloques de tiempo</label>
+    <div style="display:flex; gap:8px;">
+        <button class="btn-pequeno btn-azul" id="btn-sumar-media" style="flex:1; padding:8px 4px; font-size:0.82rem;">
+            <i class="fa-solid fa-plus"></i> Media
+        </button>
+        <button class="btn-pequeno btn-azul" id="btn-sumar-hora" style="flex:1; padding:8px 4px; font-size:0.82rem;">
+            <i class="fa-solid fa-plus"></i> 1 hora
+        </button>
+        <button class="btn-pequeno btn-rojo-outline" id="btn-quitar-bloque" style="padding:8px 10px; font-size:0.82rem;" title="Quitar último bloque">
+            <i class="fa-solid fa-minus"></i>
+        </button>
+    </div>
+    <div style="margin-top:6px; padding:6px 10px; background:var(--fondo-card); border-radius:6px; font-size:0.82rem; color:var(--texto-muted); display:flex; justify-content:space-between; align-items:center;">
+        <span>Bloques: <strong id="lbl-bloques-count" style="color:var(--texto-claro);">0</strong></span>
+        <span>Restante: <strong id="lbl-tiempo-restante" style="color:var(--color-libre); font-family:monospace;">--:--</strong></span>
+    </div>
+</div>
+
+<div class="grupo-control">
+                    <label><i class="fa-solid fa-calculator"></i> Calculadora de División</label>
+                    <div class="calc-contenedor">
+                        <div class="calc-columna calc-personas">
+                            <span class="calc-label">Personas</span>
+                            <input type="number" class="input-dark input-calc" id="input-personas" value="1" min="1" onkeydown="return !['e','E','+','-','.'].includes(event.key)" oninput="if(this.value<1||this.value==='')this.value=1;this.value=Math.floor(this.value)">
+                        </div>
+                        <div class="calc-columna calc-monto">
+                            <span class="calc-label">A pagar c/u</span>
+                            <div class="calc-resultado">
+                                <span id="lbl-monto-dividido">S/ 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+</div>
+            <!-- ── Controles específicos de PÓKER ── -->
+            <div id="controles-poker" class="config-modalidad oculto">
+                <hr class="separador">
+                <div class="grupo-control" style="margin-top:15px;">
+                    <label for="input-total-poker">Monto a cobrar (S/)</label>
+                    <input type="number" class="input-dark" id="input-total-poker" min="0" step="0.50" placeholder="Ingresa el monto..." onkeydown="return !['e','E','+','-'].includes(event.key)" oninput="if(this.value<0)this.value=0">
+                    <small class="texto-muted" style="display:block;margin-top:6px;">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Total registrado: <strong id="lbl-total-poker-preview" style="color:var(--color-libre);">S/ 0.00</strong>
+                    </small>
+                </div>
+            </div>
+
+            <!-- ── Controles específicos de CARTAS ── -->
+            <div id="controles-cartas" class="config-modalidad oculto">
+                <hr class="separador">
+
+                <div class="grupo-control">
+                    <label for="input-nombre-jugador">Registrar jugador (S/ 1.00 entrada)</label>
+                    <div class="input-con-boton">
+                        <input type="text" class="input-dark" id="input-nombre-jugador" placeholder="Nombre del jugador...">
+                        <button class="btn-pequeno btn-verde" id="btn-agregar-jugador" title="Añadir jugador">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <label class="texto-muted" style="font-size: 0.85rem; font-weight: bold;">
+                    Jugadores activos (máx. 6)
+                </label>
+                <div class="lista-avisos" id="lista-jugadores-cartas" style="max-height: 150px; margin-bottom: 10px;">
+                    <small class="texto-muted" id="txt-sin-jugadores">No hay jugadores en esta mesa.</small>
+                </div>
+            </div>
+
+            <!-- Botones de acción de mesa -->
+            <div class="acciones-mesa">
+                <button id="btn-control-tiempo" class="btn-accion btn-verde">
+                    <i class="fa-solid fa-play"></i> Iniciar
+                </button>
+                <button id="btn-finalizar" class="btn-accion btn-rojo">
+                    <i class="fa-solid fa-stop"></i> Finalizar
+                </button>
+                
+            </div>
+
+        </aside>
+
+        <!-- PANEL PRINCIPAL: Dashboard -->
+        <main class="panel-principal">
+
+            <div id="vista-dashboard" class="vista-seccion">
+
+                <!-- Estadísticas y grid de mesas -->
+                <section class="bloque-superior borde-tematico">
+
+                    <h2 class="titulo-seccion">
+                        <i class="fa-solid fa-table-cells-large"></i> Estado de Mesas
+                    </h2>
+
+                    <!-- Tarjetas de estadísticas -->
+                    <div class="grid-stats">
+                        <div class="stat-card">
+                            <span><i class="fa-solid fa-hashtag"></i> Total</span>
+                            <h3 id="stat-total">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span><i class="fa-solid fa-circle-check"></i> Libres</span>
+                            <h3 id="stat-libres">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span><i class="fa-solid fa-circle-xmark"></i> Ocupadas</span>
+                            <h3 id="stat-ocupadas">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span><i class="fa-solid fa-circle-pause"></i> Pausadas</span>
+                            <h3 id="stat-pausadas">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span><i class="fa-solid fa-coins"></i> Ingresos hoy</span>
+                            <h3 id="stat-ingresos">S/ 0.00</h3>
+                        </div>
+                    </div>
+
+                    <!-- Barra de acciones y leyenda -->
+                    <div class="barra-filtros">
+                        <button class="btn-outline btn-agregar" id="btn-agregar-cartas">
+                            <i class="fa-solid fa-plus"></i> Agregar mesa de cartas
+                        </button>
+
+                        <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--texto-muted); margin-left: auto;">
+                            <span><i class="fa-solid fa-circle" style="color: var(--color-libre);"></i> Libre</span>
+                            <span><i class="fa-solid fa-circle" style="color: var(--color-ocupada);"></i> Jugando</span>
+                            <span><i class="fa-solid fa-circle" style="color: var(--color-pausada);"></i> Pausada</span>
+                        </div>
+                    </div>
+
+                    <!-- Grid de tarjetas de mesa — lo llena JS -->
+                    <div class="grid-mesas" id="contenedor-mesas"></div>
+
+                </section>
+
+                <!-- Historial y registro de eventos -->
+                <div class="grid-historiales">
+
+                    <section class="bloque-historial borde-tematico">
+                        <div class="header-con-boton">
+                            <h2 class="titulo-seccion">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Sesiones finalizadas
+                            </h2>
+                            <button class="btn-rojo-outline" id="btn-limpiar-historial">
+                                <i class="fa-solid fa-trash-can"></i> Limpiar
+                            </button>
+                        </div>
+
+                        <div class="tabla-responsive">
+                            <table class="tabla-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Mesa</th>
+                                        <th>Modalidad</th>
+                                        <th>Inicio</th>
+                                        <th>Fin</th>
+                                        <th>Tiempo</th>
+                                        <th>Total</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-historial"></tbody>
+                            </table>
+                        </div>
+                        <div style="text-align:center;margin-top:12px;">
+                            <button id="btn-ver-mas-historial" class="btn-outline"
+                                style="display:none;font-size:0.85rem;padding:6px 20px;">
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="bloque-avisos borde-tematico">
+                        <h2 class="titulo-seccion">
+                            <i class="fa-solid fa-bell"></i> Registro de eventos
+                        </h2>
+                        <ul id="lista-avisos" class="lista-avisos"></ul>
+                    </section>
+
+                </div>
+
+            </div><!-- /vista-dashboard -->
+
+        </main>
+
+    </div><!-- /app-contenedor -->
+
+    <!-- =============================================
+         MODAL DE COBRO
+         ============================================= -->
+<div id="modal-cobro" class="modal-overlay oculto">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-invoice-dollar"></i> Resumen de cobro</h2>
+                <button class="btn-cerrar-modal" id="btn-cerrar-modal" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p><strong>Mesa:</strong> <span id="modal-mesa-nombre">--</span></p>
+                <p><strong>Tiempo total:</strong> <span id="modal-tiempo">--:--:--</span></p>
+                <h3 class="total-cobrar">TOTAL: S/ <span id="modal-total">0.00</span></h3>
+
+                <div id="modal-desglose-cartas" class="oculto" style="background:var(--bg-input);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;"></div>
+
+                <div class="opciones-lista oculto" id="seccion-input-lista">
+                    <label for="input-nombre-lista" style="color: var(--texto-muted); font-size: 0.9rem; font-weight: 600;">
+                        Nombre del cliente para enviar a lista:
+                    </label>
+                    <input type="text" class="input-dark" id="input-nombre-lista" placeholder="Ej. Juan Pérez">
+                </div>
+            </div>
+
+            <div class="modal-footer modal-footer-grid">
+                <button class="btn-modal btn-verde" id="btn-cobrar-ahora">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Cobrar
+                </button>
+                <button class="btn-modal btn-amarillo" id="btn-agregar-lista">
+                    <i class="fa-solid fa-address-book"></i> A lista
+                </button>
+                <button class="btn-modal btn-rojo" id="btn-eliminar-sin-cobrar">
+                    <i class="fa-solid fa-trash"></i> Sin cobrar
+                </button>
+                <button class="btn-modal btn-azul" id="btn-cancelar-cobro">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="modal-confirmacion" class="modal-overlay oculto">
+        <div class="modal-content modal-confirm-content">
+            
+            <div class="modal-header modal-confirm-header">
+                <h2 id="modal-confirm-titulo">
+                    <i class="fa-solid fa-circle-exclamation"></i> Confirmar
+                </h2>
+            </div>
+            
+            <div class="modal-body modal-confirm-body">
+                <p id="modal-confirm-mensaje">
+                    ¿Estás seguro de realizar esta acción?
+                </p>
+            </div>
+            
+            <div class="modal-footer modal-confirm-footer">
+                <button class="btn-modal btn-ghost" id="btn-confirm-cancelar">
+                    Cancelar
+                </button>
+                <button class="btn-modal btn-rojo" id="btn-confirm-aceptar">
+                    Sí, confirmar
+                </button>
+            </div>
+            
+        </div>
+    </div>
+
+    <script type="module" src="js/pages/dashboard.js"></script>
+
+    <!-- ══════════════════════════════════════════
+         MODAL: PERFIL DE USUARIO
+         ══════════════════════════════════════════ -->
+    <div class="modal-overlay" id="modal-perfil" style="display:none;">
+        <div class="modal-caja" style="max-width:420px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-id-card"></i> Mi Perfil</h3>
+                <button class="btn-cerrar-modal" id="cerrar-modal-perfil"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-cuerpo" style="padding:24px 28px;">
+                <div style="display:flex;align-items:center;gap:18px;margin-bottom:24px;">
+                    <div style="width:64px;height:64px;border-radius:50%;background:var(--bg-input);border:2px solid var(--color-principal);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:var(--color-principal);">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:700;font-size:1.15rem;" id="perfil-nombre">—</div>
+                        <div style="font-size:0.85rem;color:var(--texto-gris);" id="perfil-correo">—</div>
+                    </div>
+                </div>
+                <div style="display:grid;gap:12px;">
+                    <div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--bg-input);border-radius:8px;">
+                        <span style="color:var(--texto-gris);"><i class="fa-solid fa-phone"></i> Teléfono</span>
+                        <span id="perfil-telefono">—</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--bg-input);border-radius:8px;">
+                        <span style="color:var(--texto-gris);"><i class="fa-solid fa-fingerprint"></i> DNI</span>
+                        <span id="perfil-dni">—</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         SCRIPT: SESIÓN Y MENÚ USUARIO
+         ══════════════════════════════════════════ -->
+    <script>
+    (function () {
+        // ── Protección de sesión ──
+        const sesion = JSON.parse(localStorage.getItem('bb_sesion') || 'null');
+        if (!sesion) {
+            window.location.href = 'Login.html';
+            return;
+        }
+
+        // ── Rellenar nombre en topbar ──
+        const nombreCompleto = (sesion.nombres + ' ' + sesion.apellidos).trim();
+        const primerNombre = sesion.nombres.split(' ')[0];
+        document.getElementById('nombre-usuario').textContent = primerNombre;
+        document.getElementById('dd-nombre-completo').textContent = nombreCompleto;
+        document.getElementById('dd-correo').textContent = sesion.correo || sesion.usuario || '—';
+
+        // ── Toggle dropdown con click ──
+        const btnPerfil = document.getElementById('btn-perfil');
+        const ddContenido = document.getElementById('dropdown-contenido');
+        let ddAbierto = false;
+
+        btnPerfil.addEventListener('click', (e) => {
+            e.stopPropagation();
+            ddAbierto = !ddAbierto;
+            ddContenido.style.display = ddAbierto ? 'block' : 'none';
+        });
+        document.addEventListener('click', () => {
+            ddAbierto = false;
+            ddContenido.style.display = 'none';
+        });
+        ddContenido.addEventListener('click', e => e.stopPropagation());
+
+        // ── Cerrar sesión ──
+        document.getElementById('btn-cerrar-sesion').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('bb_sesion');
+            window.location.href = 'Login.html';
+        });
+
+        // ── Cambiar cuenta ──
+        document.getElementById('btn-cambiar-cuenta').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('bb_sesion');
+            window.location.href = 'Login.html';
+        });
+
+        // ── Ver perfil ──
+        document.getElementById('btn-ver-perfil').addEventListener('click', (e) => {
+            e.preventDefault();
+            ddAbierto = false;
+            ddContenido.style.display = 'none';
+
+            const nombreCompleto = (sesion.nombres + ' ' + sesion.apellidos).trim();
+            document.getElementById('perfil-nombre').textContent = nombreCompleto || 'Admin';
+            document.getElementById('perfil-correo').textContent = sesion.correo || sesion.usuario || '—';
+            document.getElementById('perfil-telefono').textContent = sesion.telefono || '—';
+            document.getElementById('perfil-dni').textContent = sesion.dni || '—';
+
+            document.getElementById('modal-perfil').style.display = 'flex';
+        });
+
+        document.getElementById('cerrar-modal-perfil').addEventListener('click', () => {
+            document.getElementById('modal-perfil').style.display = 'none';
+        });
+        document.getElementById('modal-perfil').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal-perfil'))
+                document.getElementById('modal-perfil').style.display = 'none';
+        });
+    })();
+    </script>
+
+</body>
+</html>
