@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificador de Aves - Leyva</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Clasificador <span class="highlight">IA</span></h1>
+        <p class="subtitle">Desarrollado por Leyva</p>
+        
+        <p id="status" class="loading">Iniciando motor neuronal...</p>
+
+        <div class="input-wrapper">
+            <input type="file" id="file-input" accept="image/*" onchange="previewAndPredict()" disabled />
+        </div>
+
+        <br>
+        <img id="preview" src="" alt="Vista previa de la imagen">
+
+        <div id="prediction-result" class="result"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
