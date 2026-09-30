@@ -1,0 +1,107 @@
+name: Tickets MPC CI
+
+on:
+  push:
+    branches:
+      - leyva-cambios
+    paths:
+      - 'Titckets-MPC-main/**'
+      - '.github/workflows/tickets-mpc-ci.yml'
+  pull_request:
+    paths:
+      - 'Titckets-MPC-main/**'
+      - '.github/workflows/tickets-mpc-ci.yml'
+
+jobs:
+  backend:
+    name: Backend Laravel
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: helpdesk_testing
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: helpdesk_testing
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      JWT_SECRET: ci-only-jwt-secret-4b5fa67f8fe84fc394d46b8c79ce4d11
+
+    defaults:
+      run:
+        working-directory: Titckets-MPC-main/backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, dom, fileinfo
+          coverage: none
+
+      - name: Validate Composer
+        run: composer validate --strict
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare test environment
+        run: |
+          cp .env.testing.example .env.testing
+          php artisan key:generate --env=testing --force
+          php artisan storage:link || true
+
+      - name: Run migrations on isolated database
+        run: php artisan migrate --env=testing --force
+
+      - name: Run backend tests
+        run: php artisan test
+
+  frontend:
+    name: Frontend React
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Titckets-MPC-main/frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: Titckets-MPC-main/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Lint frontend
+        run: npm run lint
