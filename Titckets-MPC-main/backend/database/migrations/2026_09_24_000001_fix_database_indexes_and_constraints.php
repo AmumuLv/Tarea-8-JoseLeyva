@@ -2,14 +2,14 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        // 1. Add missing indexes on tickets
+        // Índices de consulta frecuentes.
         Schema::table('tickets', function (Blueprint $table) {
             $table->index('creado_por');
             $table->index('asignado_a');
@@ -17,78 +17,129 @@ return new class extends Migration
             $table->index('categoria');
         });
 
-        // 2. Add missing index on area_usuario
         Schema::table('area_usuario', function (Blueprint $table) {
             $table->index('usuario_id');
         });
 
-        // 3. Add missing index on jefe_historial
         Schema::table('jefe_historial', function (Blueprint $table) {
             $table->index('user_id');
         });
 
-        // 4. Add missing index on user_audit
         Schema::table('user_audit', function (Blueprint $table) {
             $table->index('user_id');
         });
 
-        // 5. Add missing indexes on bienes
         Schema::table('bienes', function (Blueprint $table) {
             $table->index('tipo_bien_id');
             $table->index('area_id');
             $table->index('estado');
         });
 
-        // 6. Fix bien_historial.usuario string → FK to users
-        Schema::table('bien_historial', function (Blueprint $table) {
-            $table->foreignId('usuario_id')->nullable()->after('descripcion')->constrained('users')->nullOnDelete();
-        });
-        // Migrate data from string to FK where possible
-        DB::statement('UPDATE bien_historial bh
-            INNER JOIN users u ON bh.usuario = u.nombres
-            SET bh.usuario_id = u.id
-            WHERE bh.usuario IS NOT NULL');
-        Schema::table('bien_historial', function (Blueprint $table) {
-            $table->dropColumn('usuario');
-        });
+        // bien_historial.usuario era texto libre. Solo se asigna un usuario_id
+        // cuando el nombre identifica a UNA sola persona. Si es ambiguo, se
+        // conserva el valor histórico dentro de la descripción para no atribuir
+        // una acción al usuario equivocado.
+        if (!Schema::hasColumn('bien_historial', 'usuario_id')) {
+            Schema::table('bien_historial', function (Blueprint $table) {
+                $table->foreignId('usuario_id')
+                    ->nullable()
+                    ->after('descripcion')
+                    ->constrained('users')
+                    ->nullOnDelete();
+            });
+        }
 
-        // 7. Consolidate duplicate photo columns: keep foto, drop avatar
-        // Migrate data from avatar to foto where foto is null
-        DB::statement('UPDATE users SET foto = avatar WHERE foto IS NULL AND avatar IS NOT NULL');
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('avatar');
-        });
+        if (Schema::hasColumn('bien_historial', 'usuario')) {
+            $usuariosUnicos = DB::table('users')
+                ->select('nombres', DB::raw('MIN(id) as id'), DB::raw('COUNT(*) as total'))
+                ->whereNotNull('nombres')
+                ->where('nombres', '!=', '')
+                ->groupBy('nombres')
+                ->havingRaw('COUNT(*) = 1')
+                ->get()
+                ->keyBy('nombres');
 
-        // 8. Consolidate duplicate email columns in areas: keep correo, drop email
-        // Migrate data from email to correo where correo is null
-        DB::statement('UPDATE areas SET correo = email WHERE correo IS NULL AND email IS NOT NULL');
-        Schema::table('areas', function (Blueprint $table) {
-            $table->dropColumn('email');
-        });
+            DB::table('bien_historial')
+                ->whereNotNull('usuario')
+                ->orderBy('id')
+                ->chunkById(200, function ($rows) use ($usuariosUnicos) {
+                    foreach ($rows as $row) {
+                        $legacyUser = trim((string) $row->usuario);
+                        if ($legacyUser === '') {
+                            continue;
+                        }
 
-        // 9. Remove password_correo plain text column from areas
-        Schema::table('areas', function (Blueprint $table) {
-            $table->dropColumn('password_correo');
-        });
+                        $match = $usuariosUnicos->get($legacyUser);
+                        if ($match) {
+                            DB::table('bien_historial')
+                                ->where('id', $row->id)
+                                ->update(['usuario_id' => $match->id]);
+                            continue;
+                        }
 
-        // 10. Add unique constraint to cargos.nombre
+                        $descripcion = trim((string) ($row->descripcion ?? ''));
+                        $sufijo = "[Usuario histórico: {$legacyUser}]";
+                        if (!str_contains($descripcion, $sufijo)) {
+                            $descripcion = trim($descripcion . ' ' . $sufijo);
+                            DB::table('bien_historial')
+                                ->where('id', $row->id)
+                                ->update(['descripcion' => $descripcion]);
+                        }
+                    }
+                });
+
+            Schema::table('bien_historial', function (Blueprint $table) {
+                $table->dropColumn('usuario');
+            });
+        }
+
+        // Consolidar columnas duplicadas conservando los datos existentes.
+        if (Schema::hasColumn('users', 'avatar')) {
+            DB::table('users')
+                ->whereNull('foto')
+                ->whereNotNull('avatar')
+                ->update(['foto' => DB::raw('avatar')]);
+
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('avatar');
+            });
+        }
+
+        if (Schema::hasColumn('areas', 'email')) {
+            DB::table('areas')
+                ->whereNull('correo')
+                ->whereNotNull('email')
+                ->update(['correo' => DB::raw('email')]);
+
+            Schema::table('areas', function (Blueprint $table) {
+                $table->dropColumn('email');
+            });
+        }
+
+        // Las contraseñas de áreas no deben almacenarse en texto plano.
+        if (Schema::hasColumn('areas', 'password_correo')) {
+            Schema::table('areas', function (Blueprint $table) {
+                $table->dropColumn('password_correo');
+            });
+        }
+
+        // Antes de crear restricciones UNIQUE se valida explícitamente para
+        // evitar una falla de migración poco clara o una limpieza automática
+        // que pudiera borrar información real.
+        $this->assertNoDuplicateNames('cargos');
+        $this->assertNoDuplicateNames('tipo_bienes');
+
         Schema::table('cargos', function (Blueprint $table) {
             $table->unique('nombre');
         });
 
-        // 11. Add unique constraint to tipo_bienes.nombre
         Schema::table('tipo_bienes', function (Blueprint $table) {
             $table->unique('nombre');
         });
 
-        // 12 & 13. Fix email and password nullable in users
-        // First, handle any null values
-        DB::statement("UPDATE users SET email = 'unknown@placeholder.com' WHERE email IS NULL");
-        DB::statement("UPDATE users SET password = '" . bcrypt('changeme') . "' WHERE password IS NULL");
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('email')->nullable(false)->change();
-            $table->string('password')->nullable(false)->change();
-        });
+        // No se fuerza email/password a NOT NULL y tampoco se crean valores
+        // placeholder. Las migraciones posteriores permiten ambos campos
+        // nullable para soportar registros de personal sin cuenta de acceso.
     }
 
     public function down(): void
@@ -118,20 +169,35 @@ return new class extends Migration
             $table->dropIndex(['estado']);
         });
 
-        Schema::table('bien_historial', function (Blueprint $table) {
-            $table->string('usuario')->nullable()->after('descripcion');
-            $table->dropForeign(['usuario_id']);
-            $table->dropColumn('usuario_id');
-        });
+        if (!Schema::hasColumn('bien_historial', 'usuario')) {
+            Schema::table('bien_historial', function (Blueprint $table) {
+                $table->string('usuario')->nullable()->after('descripcion');
+            });
+        }
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('avatar')->nullable();
-        });
+        if (Schema::hasColumn('bien_historial', 'usuario_id')) {
+            Schema::table('bien_historial', function (Blueprint $table) {
+                $table->dropForeign(['usuario_id']);
+                $table->dropColumn('usuario_id');
+            });
+        }
 
-        Schema::table('areas', function (Blueprint $table) {
-            $table->string('email')->nullable();
-            $table->string('password_correo')->nullable();
-        });
+        if (!Schema::hasColumn('users', 'avatar')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('avatar')->nullable();
+            });
+        }
+
+        if (!Schema::hasColumn('areas', 'email') || !Schema::hasColumn('areas', 'password_correo')) {
+            Schema::table('areas', function (Blueprint $table) {
+                if (!Schema::hasColumn('areas', 'email')) {
+                    $table->string('email')->nullable();
+                }
+                if (!Schema::hasColumn('areas', 'password_correo')) {
+                    $table->string('password_correo')->nullable();
+                }
+            });
+        }
 
         Schema::table('cargos', function (Blueprint $table) {
             $table->dropUnique(['nombre']);
@@ -140,10 +206,22 @@ return new class extends Migration
         Schema::table('tipo_bienes', function (Blueprint $table) {
             $table->dropUnique(['nombre']);
         });
+    }
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('email')->nullable()->change();
-            $table->string('password')->nullable()->change();
-        });
+    private function assertNoDuplicateNames(string $table): void
+    {
+        $duplicados = DB::table($table)
+            ->select('nombre')
+            ->whereNotNull('nombre')
+            ->groupBy('nombre')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('nombre');
+
+        if ($duplicados->isNotEmpty()) {
+            throw new RuntimeException(
+                "No se puede crear UNIQUE en {$table}.nombre. Corrige primero los duplicados: " .
+                $duplicados->take(10)->implode(', ')
+            );
+        }
     }
 };
