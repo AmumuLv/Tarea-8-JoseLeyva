@@ -85,31 +85,4 @@ class Tecnico extends Model
         if ($this->tickets_activos_count > 0) return 'atendiendo';
         return 'disponible';
     }
-
-    public static function seedIniciales(): void
-    {
-        if (self::count() > 0) return;
-
-        for ($i = 1; $i <= 5; $i++) {
-            $correo = "tecnico{$i}@municasma.gob.pe";
-            $alias = "Técnico {$i}";
-
-            $user = \App\Models\User::create([
-                'nombres' => $alias,
-                'apellidos' => '-',
-                'name' => $alias,
-                'email' => $correo,
-                'password' => bcrypt('12345678'),
-                'rol_id' => 2,
-                'estado' => 'activo',
-            ]);
-
-            self::create([
-                'user_id' => $user->id,
-                'codigo' => 'TEC-' . str_pad($i, 4, '0', STR_PAD_LEFT),
-                'alias' => $alias,
-                'estado' => 'activo',
-            ]);
-        }
-    }
 }
