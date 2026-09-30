@@ -2,22 +2,29 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 use App\Models\Area;
 use App\Models\AreaUsuario;
 use App\Models\Cargo;
+use App\Models\Role;
+use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class AreaUsersSeeder extends Seeder
 {
     public function run(): void
     {
-        $rolArea = \App\Models\Role::where('nombre', 'Area Usuaria')->first();
+        $password = env('SEED_AREA_PASSWORD');
+        if (!$password) {
+            throw new RuntimeException(
+                'Define SEED_AREA_PASSWORD en backend/.env antes de ejecutar db:seed. No se usan contraseñas por defecto.'
+            );
+        }
 
+        $rolArea = Role::where('nombre', 'Area Usuaria')->first();
         if (!$rolArea) {
-            $this->command->error('No se encontró el rol "Area Usuaria". Ejecuta RoleSeeder primero.');
-            return;
+            throw new RuntimeException('No se encontró el rol "Area Usuaria". Ejecuta RoleSeeder primero.');
         }
 
         $cargoInstitucional = Cargo::where('nombre', 'Área Institucional')->first();
@@ -26,20 +33,23 @@ class AreaUsersSeeder extends Seeder
         $countAreaUsuarios = 0;
 
         foreach ($areas as $area) {
-            // Skip if area already has an active designación (from PersonalSeeder)
+            // La cuenta institucional solo se crea para áreas que todavía no
+            // tienen una designación activa de personal real.
             $existingDesignacion = AreaUsuario::where('area_id', $area->id)
                 ->where('estado_asignacion', 'activo')
                 ->first();
-            
+
             if ($existingDesignacion) {
-                $this->command->info("Saltando {$area->nombre}: ya tiene designación activa ({$existingDesignacion->usuario->nombres} {$existingDesignacion->usuario->apellidos})");
+                $nombre = trim(($existingDesignacion->usuario?->nombres ?? '') . ' ' . ($existingDesignacion->usuario?->apellidos ?? ''));
+                $this->command?->info("Saltando {$area->nombre}: ya tiene designación activa" . ($nombre ? " ({$nombre})" : ''));
                 continue;
             }
 
             $email = $area->correo;
-            $password = $area->password_correo ?: 'MPC@2026!';
-
-            if (!$email) continue;
+            if (!$email) {
+                $this->command?->warn("Área sin correo institucional: {$area->nombre}");
+                continue;
+            }
 
             $user = User::where('email', $email)->first();
 
@@ -78,7 +88,7 @@ class AreaUsersSeeder extends Seeder
             }
         }
 
-        $this->command->info("Se crearon {$countUsers} usuarios institucionales.");
-        $this->command->info("Se crearon {$countAreaUsuarios} asignaciones area-usuario.");
+        $this->command?->info("Se crearon {$countUsers} usuarios institucionales.");
+        $this->command?->info("Se crearon {$countAreaUsuarios} asignaciones area-usuario.");
     }
 }
