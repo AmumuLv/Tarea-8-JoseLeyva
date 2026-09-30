@@ -1,204 +1,236 @@
 # MPC Service Desk
 
-Sistema de Mesa de Ayuda para la Municipalidad Provincial de Casma. Gestión de tickets, áreas, personal, bienes y diseño.
+Sistema de mesa de ayuda para la Municipalidad Provincial de Casma. Incluye gestión de tickets, técnicos, personal, áreas/oficinas, designaciones, sedes, bienes tecnológicos, mantenimiento y auditoría.
+
+> Rama de trabajo de estabilización: `leyva-cambios`.
+> El proyecto se encuentra dentro de la carpeta `Titckets-MPC-main/` del repositorio.
 
 ## Stack
 
-- **Backend:** Laravel 13 + PHP 8.3 + MySQL 9
-- **Frontend:** React 19 + TypeScript + Vite 8 + Tailwind CSS 4
-- **Auth:** JWT (tymon/jwt-auth)
+- **Backend:** Laravel 13 + PHP 8.3+ + MySQL
+- **Frontend:** React 19 + TypeScript 6 + Vite 8 + Tailwind CSS 4
+- **Autenticación:** JWT (`tymon/jwt-auth`)
 
 ## Requisitos
 
-- PHP 8.3+
-- Composer
-- Node.js 18+
-- MySQL 8+ o 9+
+- PHP **8.3 o superior**
+- Composer 2
+- Node.js **22 LTS recomendado** (Vite 8 requiere Node 20.19+ o 22.12+)
 - npm
+- MySQL 8+
 
-## Instalación
-
-### 1. Clonar el repositorio
+Comprueba tu terminal antes de instalar:
 
 ```bash
-git clone https://github.com/Yordax36/Titckets-MPC.git
-cd Titckets-MPC
+php -v
+composer -V
+node -v
+npm -v
 ```
 
-### 2. Backend (Laravel)
+## Instalación segura
+
+### 1. Clonar y entrar a la rama de trabajo
+
+```bash
+git clone https://github.com/AmumuLv/Tarea-8-JoseLeyva.git
+cd Tarea-8-JoseLeyva
+git switch leyva-cambios
+cd Titckets-MPC-main
+```
+
+### 2. Crear la base de datos de trabajo
+
+Crea una base MySQL llamada `helpdesk` o configura otro nombre en `backend/.env`.
+
+Ejemplo:
+
+```sql
+CREATE DATABASE helpdesk CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 3. Instalar el backend
 
 ```bash
 cd backend
-
-# Instalar dependencias
 composer install
-
-# Copiar archivo de entorno
-cp .env.example .env
-
-# Generar clave de aplicación
-php artisan key:generate
-
-# Generar JWT secret
-php artisan jwt:secret
-
-# Crear base de datos
-mysql -u root -e "CREATE DATABASE helpdesk"
-
-# Configurar .env (editar credenciales de BD si es necesario)
-# DB_DATABASE=helpdesk
-# DB_USERNAME=root
-# DB_PASSWORD=
-
-# Ejecutar migraciones + seeders
-php artisan migrate --seed
+composer setup
 ```
 
-### 3. Frontend (React)
+`composer setup` realiza únicamente operaciones de preparación seguras:
+
+- conserva un `.env` existente;
+- crea `.env` desde `.env.example` si falta;
+- genera `APP_KEY` solo si está vacía;
+- genera `JWT_SECRET` solo si está vacío;
+- ejecuta únicamente migraciones pendientes (`migrate --graceful`);
+- crea el enlace `public/storage` para las evidencias;
+- instala y compila el frontend real ubicado en `../frontend`;
+- ejecuta `php artisan system:check`.
+
+**No ejecuta `migrate:fresh`, no borra tablas y no ejecuta seeders automáticamente.**
+
+Si tu MySQL usa otra contraseña, puerto o base, edita `backend/.env` antes de ejecutar las migraciones.
+
+### 4. Datos de desarrollo opcionales
+
+Los seeders ya no contienen contraseñas públicas por defecto. Antes de ejecutar `db:seed`, define localmente en `backend/.env`:
+
+```env
+SEED_ADMIN_EMAIL=otic@municasma.gob.pe
+SEED_ADMIN_PASSWORD=una_clave_local_segura
+SEED_AREA_PASSWORD=una_clave_local_segura
+SEED_TECNICO_PASSWORD=una_clave_local_segura
+```
+
+Luego, solo si realmente necesitas datos de desarrollo:
 
 ```bash
-cd frontend
+php artisan db:seed
+```
 
-# Instalar dependencias
-npm install
+Nunca confirmes estas contraseñas en Git.
 
-# Iniciar servidor de desarrollo
+## Ejecutar el sistema
+
+Abre dos terminales.
+
+### Backend
+
+```bash
+cd Titckets-MPC-main/backend
+composer dev
+```
+
+Backend: `http://localhost:8000`
+
+### Frontend
+
+```bash
+cd Titckets-MPC-main/frontend
 npm run dev
 ```
 
-### 4. Iniciar Backend
+Frontend: `http://localhost:5173`
+
+Vite redirige `/api` y `/storage` al backend local en el puerto 8000.
+
+## Comprobación de salud
+
+Desde `backend/`:
+
+```bash
+php artisan system:check
+```
+
+La comprobación revisa, sin modificar datos:
+
+- versión de PHP y Node;
+- presencia de `.env`;
+- `APP_KEY` y `JWT_SECRET`;
+- enlace `public/storage`;
+- permisos de escritura de Laravel;
+- conexión a MySQL;
+- tablas principales;
+- posible estado pendiente de migraciones;
+- duplicados en catálogos críticos;
+- referencias huérfanas básicas en tickets y bienes.
+
+Para revisar únicamente las migraciones:
+
+```bash
+php artisan migrate:status
+```
+
+## Pruebas aisladas
+
+Las pruebas usan una base separada llamada **`helpdesk_testing`**. Nunca uses la base `helpdesk` de trabajo para PHPUnit.
+
+1. Crea la base de pruebas:
+
+```sql
+CREATE DATABASE helpdesk_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+2. Prepara el entorno de pruebas:
 
 ```bash
 cd backend
-php artisan serve
+cp .env.testing.example .env.testing
+php artisan key:generate --env=testing
+php artisan migrate --env=testing --force
 ```
 
-El backend corre en `http://localhost:8000` y el frontend en `http://localhost:5173`. El proxy de Vite redirige `/api` al backend automáticamente.
+En Windows Git Bash, `cp` funciona. Si usas CMD puedes copiar el archivo manualmente.
 
-## Credenciales por defecto
+3. Ejecuta:
 
-### Administrador
-- **Email:** `otic@municasma.gob.pe`
-- **Contraseña:** `OTIC#2026`
-
-### Usuarios de Área
-- **Contraseña general:** `MPC@2026!`
-- Cada área tiene su correo institucional (ej: `alcaldia@municasma.gob.pe`)
-
-## Sistema de Permisos
-
-El sistema utiliza permisos basados en roles para controlar el acceso a funcionalidades. El rol **Administrador** tiene acceso total automaticamente.
-
-### Roles
-
-| Rol | Descripción |
-|-----|-------------|
-| Administrador | Acceso total al sistema (bypass de permisos) |
-| Tecnico (Soporte OTIC) | Tickets asignados, gestión de bienes, historial |
-| Area Usuaria | Crear tickets, ver bienes de su área, perfil |
-
-### Permisos por Módulo
-
-| Módulo | Permisos |
-|--------|----------|
-| **Tickets** | ver_todos_los_tickets, ver_tickets_asignados, ver_mis_tickets, crear_ticket, editar_ticket, cambiar_estado, cambiar_prioridad, asignar_tecnico, reasignar_ticket, subir_evidencia, eliminar_evidencia, ver_ticket_pdf |
-| **Usuarios** | crear_usuario, editar_usuario, eliminar_usuario, ver_usuarios |
-| **Areas** | crear_area, editar_area, eliminar_area, ver_areas |
-| **Técnicos** | ver_tecnicos, crear_tecnico, editar_tecnico, eliminar_tecnico |
-| **Cargos** | ver_cargos, crear_cargo, editar_cargo, eliminar_cargo |
-| **Designaciones** | ver_designaciones, crear_designacion, editar_designacion, eliminar_designacion |
-| **Bienes** | ver_bienes, crear_bien, editar_bien, eliminar_bien, gestionar_bienes |
-| **Configuración** | configurar_sistema |
-| **Auditoría** | ver_auditoria |
-| **Dashboard** | ver_estadisticas |
-| **Perfil Area** | ver_perfil_area, editar_perfil_area, cambiar_password_area |
-
-### Asignación de Permisos por Rol
-
-**Tecnico (Soporte OTIC):** ver_tickets_asignados, editar_ticket, cambiar_estado, cambiar_prioridad, agregar_respuesta, subir_evidencia, eliminar_evidencia, ver_ticket_pdf, ver_historial, ver_bienes, editar_bien, gestionar_bienes, ver_tecnicos, ver_estadisticas
-
-**Area Usuaria:** ver_mis_tickets, crear_ticket, editar_ticket, agregar_respuesta, subir_evidencia, ver_ticket_pdf, ver_historial, ver_bienes, ver_perfil_area, editar_perfil_area, cambiar_password_area, ver_estadisticas
-
-## Seguridad
-
-- Rate limiting: 5 intentos/min en login, 120 req/min en API autenticada
-- JWT tokens con refresh
-- Middleware de permisos en todas las rutas protegidas
-- Auditoría completa de acciones
-- Validación de entrada en todos los endpoints
-
-## Estructura del proyecto
-
+```bash
+php artisan test
 ```
-Tickets/
-├── backend/                    # Laravel API
+
+`phpunit.xml` fuerza `DB_DATABASE=helpdesk_testing` para evitar que las pruebas apunten por accidente a la base de trabajo.
+
+## Frontend: comprobaciones
+
+```bash
+cd frontend
+npm ci
+npm run build
+npm run lint
+```
+
+## Evidencias e imágenes
+
+Las evidencias de tickets se almacenan en `backend/storage/app/public`. Para que `/storage/...` sea accesible debe existir el enlace:
+
+```bash
+cd backend
+php artisan storage:link
+```
+
+`composer setup` ya ejecuta este paso durante una instalación nueva.
+
+## Seguridad del repositorio
+
+No deben subirse:
+
+- `.env` o `.env.testing`;
+- `JWT_SECRET`;
+- `APP_KEY`;
+- contraseñas reales;
+- credenciales de MySQL;
+- tokens o claves de servicios externos.
+
+Las contraseñas que alguna vez hayan sido publicadas en el historial del repositorio deben considerarse comprometidas y reemplazarse en cualquier instalación donde se hayan utilizado.
+
+## Estructura
+
+```text
+Titckets-MPC-main/
+├── backend/                     Laravel API
 │   ├── app/
-│   │   ├── Http/Controllers/   # Controladores API
-│   │   ├── Http/Middleware/     # CheckPermission, CheckRole
-│   │   ├── Models/             # Modelos Eloquent
-│   │   ├── Services/           # PermisoService
-│   │   └── Helpers/            # AuditHelper
 │   ├── database/
-│   │   ├── migrations/         # Migraciones de BD
-│   │   └── seeders/            # Seeders (roles, permisos, etc.)
-│   ├── routes/api.php          # Rutas API con middleware de permisos
-│   └── config/
-│
-├── frontend/                   # React App
-│   ├── src/
-│   │   ├── api/                # Funciones API (axios)
-│   │   ├── components/         # Componentes reutilizables
-│   │   │   ├── layout/         # Sidebar, Navbar, Layout
-│   │   │   ├── tickets/        # Componentes de tickets
-│   │   │   └── ui/             # Botones, Modals, Tables, etc.
-│   │   ├── pages/              # Páginas/rutas
-│   │   ├── hooks/              # useAuth, usePermission
-│   │   ├── store/              # Zustand stores
-│   │   ├── routes/             # PermissionRoute, ProtectedRoute
-│   │   └── utils/              # permissions.ts, constants, formatters
-│   └── vite.config.ts
-│
+│   │   ├── migrations/
+│   │   └── seeders/
+│   ├── routes/
+│   ├── scripts/
+│   └── tests/
+├── frontend/                    React + TypeScript + Vite
+│   └── src/
+├── docs/
 └── README.md
 ```
 
-## Comandos útiles
+## Reglas de estabilización
 
-```bash
-# Ejecutar migraciones
-php artisan migrate
+Mientras se trabaja en `leyva-cambios`:
 
-# Resetear BD y re-crear datos
-php artisan migrate:fresh --seed
+- no usar `php artisan migrate:fresh` sobre la base de trabajo;
+- no borrar datos para ocultar errores de migración;
+- no ejecutar `composer update` como solución genérica;
+- no hacer `force push`;
+- corregir y probar por fases;
+- utilizar migraciones compatibles con los datos existentes.
 
-# Crear JWT secret
-php artisan jwt:secret
-
-# Limpiar cache
-php artisan cache:clear
-php artisan config:clear
-
-# Tinker (consola interactiva)
-php artisan tinker
-```
-
-## Variables de entorno importantes
-
-```env
-# Base de datos
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=helpdesk
-DB_USERNAME=root
-DB_PASSWORD=
-
-# JWT
-JWT_SECRET=tu-secret-aqui
-
-# Frontend (en frontend/.env si es necesario)
-VITE_API_URL=http://localhost:8000
-```
-
-## Licencia
-
-Proyecto privado - Municipalidad Provincial de Casma
+Consulta `docs/FASE_0_ESTABILIZACION.md` para el detalle de la estabilización inicial.
