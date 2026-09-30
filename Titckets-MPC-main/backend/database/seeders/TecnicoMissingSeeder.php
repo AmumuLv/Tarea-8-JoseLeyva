@@ -5,16 +5,28 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
+/**
+ * Seeder de reparación manual para instalaciones antiguas que tengan técnicos
+ * 2-5 incompletos. No forma parte del DatabaseSeeder normal.
+ */
 class TecnicoMissingSeeder extends Seeder
 {
     public function run(): void
     {
+        $password = env('SEED_TECNICO_PASSWORD');
+        if (!$password) {
+            throw new RuntimeException(
+                'Define SEED_TECNICO_PASSWORD en backend/.env antes de ejecutar TecnicoMissingSeeder.'
+            );
+        }
+
         $tecnicos = [
-            2 => 'Tecnico 2',
-            3 => 'Tecnico 3',
-            4 => 'Tecnico 4',
-            5 => 'Tecnico 5',
+            2 => 'Técnico 2',
+            3 => 'Técnico 3',
+            4 => 'Técnico 4',
+            5 => 'Técnico 5',
         ];
 
         foreach ($tecnicos as $i => $alias) {
@@ -23,7 +35,7 @@ class TecnicoMissingSeeder extends Seeder
 
             $exists = DB::table('tecnicos')->where('codigo', $codigo)->first();
             if ($exists) {
-                $this->command->info("Ya existe: {$codigo}");
+                $this->command?->info("Ya existe: {$codigo}");
                 continue;
             }
 
@@ -34,14 +46,15 @@ class TecnicoMissingSeeder extends Seeder
                     'apellidos' => '-',
                     'name' => $alias,
                     'email' => $correo,
-                    'password' => Hash::make('12345678'),
+                    'username' => $correo,
+                    'password' => Hash::make($password),
                     'rol_id' => 2,
                     'estado' => 'activo',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
                 $userId = DB::getPdo()->lastInsertId();
-                $this->command->info("Usuario creado: {$correo} (ID: {$userId})");
+                $this->command?->info("Usuario creado: {$correo} (ID: {$userId})");
             }
 
             DB::table('tecnicos')->insert([
@@ -52,9 +65,9 @@ class TecnicoMissingSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            $this->command->info("Técnico creado: {$codigo} - {$alias}");
+            $this->command?->info("Técnico creado: {$codigo} - {$alias}");
         }
 
-        $this->command->info("Total técnicos: " . DB::table('tecnicos')->count());
+        $this->command?->info('Total técnicos: ' . DB::table('tecnicos')->count());
     }
 }
