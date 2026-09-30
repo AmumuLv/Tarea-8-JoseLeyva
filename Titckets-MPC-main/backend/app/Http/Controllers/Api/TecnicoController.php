@@ -16,8 +16,6 @@ class TecnicoController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        Tecnico::seedIniciales();
-
         $query = Tecnico::with(['user:id,id,nombres,apellidos,email,estado'])
             ->withCount(['tickets' => function ($q) {
                 $q->whereIn('tickets.estado', ['pendiente', 'asignado', 'en_proceso', 'en_espera']);
