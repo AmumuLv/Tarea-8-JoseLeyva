@@ -34,7 +34,7 @@ function toISODate(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-export default function DatePicker({ value, onChange, placeholder = 'dd/mm/aaaa', required: _required, min, max, disabled }: DatePickerProps) {
+export default function DatePicker({ value, onChange, placeholder = 'dd/mm/aaaa', required = false, min, max, disabled }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState(() => value ? formatDateDisplay(value) : '');
   const [viewDate, setViewDate] = useState(() => {
@@ -87,9 +87,9 @@ export default function DatePicker({ value, onChange, placeholder = 'dd/mm/aaaa'
     const { year, month } = viewDate;
     const totalDays = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
-    const prevDays = getDaysInMonth(year, month - 1 < 0 ? year - 1 : year, );
-    const prevMonth = month - 1 < 0 ? 11 : month - 1;
-    const prevYear = month - 1 < 0 ? year - 1 : year;
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevYear = month === 0 ? year - 1 : year;
+    const prevDays = getDaysInMonth(prevYear, prevMonth);
 
     const result: Array<{ day: number; month: number; year: number; currentMonth: boolean; date: string }> = [];
 
@@ -209,6 +209,7 @@ export default function DatePicker({ value, onChange, placeholder = 'dd/mm/aaaa'
           onClick={() => !disabled && setOpen(true)}
           placeholder={placeholder}
           disabled={disabled}
+          required={required}
           maxLength={10}
           className={`flex-1 px-3 py-2 text-sm bg-transparent outline-none ${disabled ? 'cursor-not-allowed text-gray-400' : 'text-gray-900 cursor-pointer'}`}
         />
