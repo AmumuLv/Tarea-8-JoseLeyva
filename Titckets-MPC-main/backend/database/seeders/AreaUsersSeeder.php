@@ -79,7 +79,7 @@ class AreaUsersSeeder extends Seeder
                     'usuario_id' => $user->id,
                     'cargo' => 'Área Institucional',
                     'cargo_id' => $cargoInstitucional?->id,
-                    'tipo_designacion' => 'titular',
+                    'tipo_designacion' => 'Titular',
                     'activo' => true,
                     'fecha_inicio' => now(),
                     'estado_asignacion' => 'activo',
