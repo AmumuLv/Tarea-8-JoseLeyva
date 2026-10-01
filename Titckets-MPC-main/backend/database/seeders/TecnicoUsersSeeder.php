@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -16,6 +17,11 @@ class TecnicoUsersSeeder extends Seeder
             throw new RuntimeException(
                 'Define SEED_TECNICO_PASSWORD en backend/.env antes de ejecutar db:seed. No se usan contraseñas por defecto.'
             );
+        }
+
+        $rolTecnico = Role::where('nombre', 'Tecnico')->first();
+        if (!$rolTecnico) {
+            throw new RuntimeException('No se encontró el rol Tecnico. Ejecuta RoleSeeder primero.');
         }
 
         for ($i = 1; $i <= 5; $i++) {
@@ -33,7 +39,7 @@ class TecnicoUsersSeeder extends Seeder
                     'email' => $correo,
                     'username' => $correo,
                     'password' => Hash::make($password),
-                    'rol_id' => 2,
+                    'rol_id' => $rolTecnico->id,
                     'estado' => 'activo',
                     'created_at' => now(),
                     'updated_at' => now(),
