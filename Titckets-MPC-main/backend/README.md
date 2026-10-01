@@ -36,6 +36,7 @@ npm run dev
 ## Verificación
 
 ```bash
+composer preflight
 php artisan system:check
 php artisan migrate:status
 ```
@@ -47,13 +48,19 @@ Las pruebas usan exclusivamente `helpdesk_testing`.
 ```bash
 cp .env.testing.example .env.testing
 php artisan key:generate --env=testing
+php artisan jwt:secret --env=testing --force
 php artisan migrate --env=testing --force
+php artisan db:seed --class=RoleSeeder --env=testing --force
+php artisan db:seed --class=PermisoSeeder --env=testing --force
+php artisan db:seed --class=RolPermisoSeeder --env=testing --force
 php artisan test
 ```
 
+Los tres seeders anteriores cargan únicamente los catálogos mínimos de autorización que requieren las pruebas. No crean usuarios reales ni usan contraseñas del entorno de trabajo.
+
 No apuntes PHPUnit a la base `helpdesk` de trabajo.
 
-## Seeders
+## Seeders de desarrollo
 
 No existen contraseñas de acceso predeterminadas dentro del código. Para ejecutar datos de desarrollo debes definir primero, solo en tu `.env` local:
 
