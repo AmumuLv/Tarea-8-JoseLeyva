@@ -12,6 +12,10 @@ on:
       - 'Titckets-MPC-main/**'
       - '.github/workflows/tickets-mpc-ci.yml'
 
+concurrency:
+  group: tickets-mpc-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   backend:
     name: Backend Laravel
@@ -43,7 +47,6 @@ jobs:
       SESSION_DRIVER: array
       QUEUE_CONNECTION: sync
       MAIL_MAILER: array
-      JWT_SECRET: ci-only-jwt-secret-4b5fa67f8fe84fc394d46b8c79ce4d11
 
     defaults:
       run:
@@ -66,10 +69,11 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Prepare test environment
+      - name: Prepare isolated test environment
         run: |
           cp .env.testing.example .env.testing
           php artisan key:generate --env=testing --force
+          php artisan jwt:secret --env=testing --force
           php artisan storage:link || true
 
       - name: Run migrations on isolated database
