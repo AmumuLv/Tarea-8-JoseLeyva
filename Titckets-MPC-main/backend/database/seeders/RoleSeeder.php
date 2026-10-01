@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class RoleSeeder extends Seeder
 {
@@ -17,13 +17,9 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
-            DB::table('roles')->updateOrInsert(
+            Role::updateOrCreate(
                 ['nombre' => $role['nombre']],
-                [
-                    'descripcion' => $role['descripcion'],
-                    'updated_at' => now(),
-                    'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
-                ]
+                ['descripcion' => $role['descripcion']]
             );
         }
     }
