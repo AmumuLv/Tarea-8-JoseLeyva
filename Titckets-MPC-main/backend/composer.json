@@ -36,6 +36,7 @@
     },
     "scripts": {
         "setup": [
+            "@php scripts/preflight.php",
             "@php scripts/ensure-environment.php",
             "@php artisan migrate --graceful --ansi",
             "@php artisan storage:link --force",
@@ -49,6 +50,9 @@
         ],
         "health": [
             "@php artisan system:check"
+        ],
+        "preflight": [
+            "@php scripts/preflight.php"
         ],
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
