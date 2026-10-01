@@ -181,7 +181,12 @@ cp .env.testing.example .env.testing
 php artisan key:generate --env=testing
 php artisan jwt:secret --env=testing --force
 php artisan migrate --env=testing --force
+php artisan db:seed --class=RoleSeeder --env=testing --force
+php artisan db:seed --class=PermisoSeeder --env=testing --force
+php artisan db:seed --class=RolPermisoSeeder --env=testing --force
 ```
+
+Los tres últimos comandos cargan únicamente los catálogos mínimos de roles y permisos requeridos por los tests; no crean usuarios reales.
 
 En Windows Git Bash, `cp` funciona. Si usas CMD puedes copiar el archivo manualmente.
 
