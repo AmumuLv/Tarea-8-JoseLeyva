@@ -2,25 +2,30 @@
 
 namespace Database\Seeders;
 
+use App\Models\TipoBien;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class TipoBienSeeder extends Seeder
 {
     public function run(): void
     {
         $tipos = [
-            ['nombre' => 'Computadora de Escritorio', 'icono' => 'Monitor', 'estado' => 'activo', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Laptop', 'icono' => 'Laptop', 'estado' => 'activo', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Impresora', 'icono' => 'Printer', 'estado' => 'activo', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Monitor', 'icono' => 'Monitor', 'estado' => 'activo', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Teclado', 'icono' => 'Keyboard', 'estado' => 'activo', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Mouse', 'icono' => 'Mouse', 'estado' => 'activo', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Parlantes', 'icono' => 'Volume2', 'estado' => 'activo', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Equipo de Red', 'icono' => 'Wifi', 'estado' => 'activo', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Otro', 'icono' => 'Package', 'estado' => 'activo', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'Computadora de Escritorio', 'icono' => 'Monitor', 'estado' => 'activo'],
+            ['nombre' => 'Laptop', 'icono' => 'Laptop', 'estado' => 'activo'],
+            ['nombre' => 'Impresora', 'icono' => 'Printer', 'estado' => 'activo'],
+            ['nombre' => 'Monitor', 'icono' => 'Monitor', 'estado' => 'activo'],
+            ['nombre' => 'Teclado', 'icono' => 'Keyboard', 'estado' => 'activo'],
+            ['nombre' => 'Mouse', 'icono' => 'Mouse', 'estado' => 'activo'],
+            ['nombre' => 'Parlantes', 'icono' => 'Volume2', 'estado' => 'activo'],
+            ['nombre' => 'Equipo de Red', 'icono' => 'Wifi', 'estado' => 'activo'],
+            ['nombre' => 'Otro', 'icono' => 'Package', 'estado' => 'activo'],
         ];
 
-        DB::table('tipo_bienes')->insert($tipos);
+        foreach ($tipos as $tipo) {
+            TipoBien::updateOrCreate(
+                ['nombre' => $tipo['nombre']],
+                ['icono' => $tipo['icono'], 'estado' => $tipo['estado']]
+            );
+        }
     }
 }
