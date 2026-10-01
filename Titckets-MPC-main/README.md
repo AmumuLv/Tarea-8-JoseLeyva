@@ -28,6 +28,14 @@ node -v
 npm -v
 ```
 
+También puedes ejecutar, desde `backend/`:
+
+```bash
+composer preflight
+```
+
+Este chequeo detecta versiones incompatibles y extensiones PHP faltantes antes de iniciar Laravel.
+
 ## Instalación segura
 
 ### 1. Clonar y entrar a la rama de trabajo
@@ -59,12 +67,13 @@ composer setup
 
 `composer setup` realiza únicamente operaciones de preparación seguras:
 
+- ejecuta un preflight de PHP/Node/extensiones;
 - conserva un `.env` existente;
 - crea `.env` desde `.env.example` si falta;
 - genera `APP_KEY` solo si está vacía;
 - genera `JWT_SECRET` solo si está vacío;
 - ejecuta únicamente migraciones pendientes (`migrate --graceful`);
-- crea el enlace `public/storage` para las evidencias;
+- crea/repara el enlace `public/storage` para las evidencias;
 - instala y compila el frontend real ubicado en `../frontend`;
 - ejecuta `php artisan system:check`.
 
@@ -93,9 +102,21 @@ Nunca confirmes estas contraseñas en Git.
 
 ## Ejecutar el sistema
 
+### Opción rápida en Windows
+
+Desde `Titckets-MPC-main/` puedes ejecutar:
+
+```bat
+start-local.bat
+```
+
+El lanzador hace el preflight y `system:check`. Si detecta un problema, no inicia los servidores hasta que se corrija.
+
+### Opción manual
+
 Abre dos terminales.
 
-### Backend
+Backend:
 
 ```bash
 cd Titckets-MPC-main/backend
@@ -104,7 +125,7 @@ composer dev
 
 Backend: `http://localhost:8000`
 
-### Frontend
+Frontend:
 
 ```bash
 cd Titckets-MPC-main/frontend
@@ -158,6 +179,7 @@ CREATE DATABASE helpdesk_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_c
 cd backend
 cp .env.testing.example .env.testing
 php artisan key:generate --env=testing
+php artisan jwt:secret --env=testing --force
 php artisan migrate --env=testing --force
 ```
 
@@ -219,6 +241,7 @@ Titckets-MPC-main/
 ├── frontend/                    React + TypeScript + Vite
 │   └── src/
 ├── docs/
+├── start-local.bat
 └── README.md
 ```
 
