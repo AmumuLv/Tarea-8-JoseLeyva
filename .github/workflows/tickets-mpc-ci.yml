@@ -79,6 +79,12 @@ jobs:
       - name: Run migrations on isolated database
         run: php artisan migrate --env=testing --force
 
+      - name: Seed authorization catalogs for tests
+        run: |
+          php artisan db:seed --class=RoleSeeder --env=testing --force
+          php artisan db:seed --class=PermisoSeeder --env=testing --force
+          php artisan db:seed --class=RolPermisoSeeder --env=testing --force
+
       - name: Run backend tests
         run: php artisan test
 
