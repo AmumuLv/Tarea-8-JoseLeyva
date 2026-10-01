@@ -25,16 +25,13 @@
         <env name="CACHE_STORE" value="array"/>
 
         <!--
-          Las migraciones del proyecto usan capacidades de MySQL. Las pruebas
-          nunca deben apuntar a la BD de trabajo "helpdesk"; se fuerza una BD
-          independiente llamada "helpdesk_testing".
+          Las migraciones del proyecto requieren MySQL. Se fuerza únicamente
+          el motor y el nombre de una BD aislada para impedir que PHPUnit use
+          accidentalmente la base de trabajo. Host/puerto/usuario/clave se
+          leen de .env.testing o del entorno de CI.
         -->
         <env name="DB_CONNECTION" value="mysql" force="true"/>
-        <env name="DB_HOST" value="127.0.0.1" force="true"/>
-        <env name="DB_PORT" value="3306" force="true"/>
         <env name="DB_DATABASE" value="helpdesk_testing" force="true"/>
-        <env name="DB_USERNAME" value="root"/>
-        <env name="DB_PASSWORD" value=""/>
         <env name="DB_URL" value="" force="true"/>
 
         <env name="MAIL_MAILER" value="array"/>
